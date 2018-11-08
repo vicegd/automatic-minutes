@@ -1,23 +1,19 @@
 from fpdf import FPDF
 from datetime import datetime
-
-title = '20000 Leagues Under the Seas'
+from time import time
 
 class PDF_Generator(FPDF):
+    title = ""
+
+    def __init__(self, title):
+        self.title = title
+        super().__init__()
+
     def header(self):
-        # Arial bold 15
-        self.set_font('Arial', 'B', 15)
-        # Calculate width of title and position
-        w = self.get_string_width(title) + 6
-        self.set_x((210 - w) / 2)
-        # Colors of frame, background and text
-        self.set_draw_color(0, 80, 180)
-        self.set_fill_color(230, 230, 0)
-        self.set_text_color(220, 50, 50)
-        # Thickness of frame (1 mm)
-        self.set_line_width(1)
-        # Title
-        self.cell(w, 9, title, 1, 1, 'C', 1)
+        self.set_font('Arial', 'B', 12)
+        self.set_draw_color(0, 0, 255)
+        self.cell(3, 9, self.title, 0, 1, 'L')
+        self.line(10, 18, 200, 18)
         # Line break
         self.ln(10)
 
@@ -33,6 +29,22 @@ class PDF_Generator(FPDF):
 
     def front_page(self):
         self.add_page()
+        self.image('Reports/Resources/logo_uniovi.png', 70, 120, 70)
+        self.set_font('Arial', 'B', 20)
+        self.ln(30)
+        w = self.get_string_width(self.title) + 6
+        self.set_x((210 - w) / 2)
+        self.cell(w, 9, self.title, 0, 1, 'C')
+        self.ln(6)
+        self.set_font('Arial', 'B', 16)
+        s = "Actas autogeneradas"
+        w = self.get_string_width(s) + 6
+        self.set_x((210 - w) / 2)
+        self.cell(w, 9, s, 0, 1, 'C')
+        self.ln(170)
+        self.cell(140)
+        self.set_font('Arial', 'B', 12)
+        self.cell(10, 10, 'Fecha de generación: ' + datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M'), 0, 1, 'C')
 
     def thread_separator(self, thread):
         self.add_page()

@@ -2,9 +2,14 @@ from pprint import pprint
 from DBManager.db_manager import DB_Manager
 from Reports.pdf_generator import PDF_Generator
 
+course = "Diseño y Construcción de MDA"
+year = "2018-2019"
 
 db = DB_Manager()
-pdf = PDF_Generator()
+pdf = PDF_Generator(course)
+pdf.set_author('Automatic Minutes')
+pdf.set_title(course)
+pdf.front_page()
 
 email = {
     'email_id' : 1,
@@ -33,23 +38,29 @@ email2 = {
     'year' : '2018-2019',
     'course' : 'Diseño y Construcción de MDA'
 }
+
 #db.insert_data(email2)
 
 #for email in db.get_data():
 #    pdf.insert_email(email)
 
-pdf = PDF_Generator()
-pdf.set_title('tituloooo')
-pdf.set_author('Jules Verne')
-pdf.front_page()
-pdf.thread_separator("HILO 1")
+#for email in db.get_one_query_data({''}):
+#    print(email)
 
-for email in db.get_data():
-    pdf.insert_email(email)
+thread_numbers = db.get_thread_numbers(course, year)
 
-#pdf.print_chapter(1, 'A RUNAWAY REEF', '20k_c1.txt')
-#pdf.print_chapter(2, 'THE PROS AND CONS', '20k_c2.txt')
-pdf.output('tuto3.pdf', 'F')
+for thread_number in thread_numbers:
+    thread = db.get_query_data({'thread_id' : thread_number})
+    thread_start = db.get_min_time(thread_number)
+    thread_end = db.get_max_time(thread_number)
+    thread_title = "Reunión online que comienza en {} y termina en {}".format(thread_start, thread_end)
+    pdf.thread_separator(thread_title)
+
+    for email in thread:
+        pdf.insert_email(email)
+
+#pdf.thread_separator("Summary")
+pdf.output('report.pdf', 'F')
 
 
 #pprint(db.get_one_query_data({'email_id' : 1}))
