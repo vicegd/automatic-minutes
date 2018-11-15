@@ -102,3 +102,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+dcm_credentials.json
+dcm_data.json
+mswadm_credentials.json
+mswadm_data.json

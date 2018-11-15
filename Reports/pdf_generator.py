@@ -1,8 +1,8 @@
-from fpdf import FPDF
+from fpdf import FPDF, HTMLMixin
 from datetime import datetime
 from time import time
 
-class PDF_Generator(FPDF):
+class PDF_Generator(FPDF, HTMLMixin):
     title = ""
 
     def __init__(self, title):
@@ -13,6 +13,7 @@ class PDF_Generator(FPDF):
         self.set_font('Arial', 'B', 12)
         self.set_draw_color(0, 0, 255)
         self.cell(3, 9, self.title, 0, 1, 'L')
+        self.set_text_color(0, 0, 0)
         self.line(10, 18, 200, 18)
         # Line break
         self.ln(10)
@@ -53,46 +54,34 @@ class PDF_Generator(FPDF):
         self.cell(0, 6, '%s' % (thread), 0, 1, 'L', 1)
         self.ln(4)
 
-    def insert_email(self, email):
+    def insert_email(self, email, path):
         self.ln()
         self.set_font('Arial', 'B', 14)
+        self.set_text_color(100, 100, 255)
         self.cell(0, 5, email['subject'], 0, 1)
         self.ln()
         self.set_font('Times', '', 12)
-        self.cell(0, 5, "Enviado el: " + datetime.utcfromtimestamp(float(email['time_stamp'])).strftime('%Y-%m-%d %H:%M:%S'), 0, 1)
-        self.insert_author("Enviado por:", email['author'], email['author_email'])
-        i = 0
-        recipents = "Recibido por: "
-        for cc_email in email['cc_emails']:
-            if (email['cc'][i] != ""):
-                recipents += email['cc'][i] + " (" + cc_email + "); "
-            else:
-                recipents += "(" + cc_email + "); "
-            i += 1
-        self.cell(0, 5, recipents, 0, 1)
-        self.cell(0, 5, "Contenido:", 0, 1)
-        self.ln()
+        self.set_text_color(0, 0, 0)
+        self.write_html("<b>Enviado el: </b>")
+        self.write(5, datetime.utcfromtimestamp(float(float(email['time_stamp']))/1000).strftime('%Y-%m-%d %H:%M:%S')+ "\n\n")
+        self.write_html("<b>Enviado por: </b>")
+        self.write(5, email['author'] + "\n\n")
+        self.write_html("<b>Recibido por (TO): </b>")
+        self.write(5, email['to'] + "\n\n")
+        if (email['cc'] != None):
+            self.write_html("<b>Recibido por (CC): </b>")
+            self.write(5, email['cc'] + "\n\n")
+        self.write_html("<b>Resumen del mensaje recibido: </b>")
         self.set_font('Courier', '', 12)
-        self.cell(0, 5, email['data'], 1, 1)
-        self.ln()
-
-
-    def insert_author(self, text, name, address):
-        self.multi_cell(0, 5, text + " " + name + " (" + address + ")", 0, 1)
-
-# email2 = {
-#     'email_id' : 2,
-#     'thread_id' : 1,
-#     'subject' : 'Example of subject2',
-#     'data' : 'Data2',
-#     'time_stamp' : 1541579100,
-#     'author' : 'Vicente García2',
-#     'author_email' : 'garciavicente@uniovi.es',
-#     'cc' : ['Edward Rolando2', 'Cristian González2'],
-#     'cc_emails' : ['rolandoedward@uniovi.es', 'gonzalezcristian@uniovi.es'],
-#     'year' : '2018-2019',
-#     'course' : 'Diseño y Construcción de MDA'
-# }
-
-
+        snippet = email['snippet'].decode("latin-1", 'ignore')
+        snippet = snippet.replace("&lt;", "<")
+        snippet = snippet.replace("&gt;", ">")
+        self.write(5, snippet + "\n\n")
+        self.write_html("<b>Contenido completo del mensaje: </b>")
+        self.write(5, "\n")
+        f = open(path + "/" + email['email_id'] + '.html', 'w+', encoding=email['data_charset'])
+        f.write(email['data'])
+        f.close()
+        self.write_html('La información, en formato HTML, contenida en este correo electrónico, puede verse en el siguiente <a href=emails/' + email['email_id'] + '.html>enlace</a>')
+        self.write(5, "\n\n\n")
 

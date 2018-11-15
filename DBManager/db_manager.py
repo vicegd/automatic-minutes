@@ -14,12 +14,12 @@ class DB_Manager:
 
     def get_min_time(self, thread_id):
         result = self.db.emails.find({'thread_id' : thread_id}).sort([('time_stamp', 1)]).limit(1)
-        time_stamp = result[0]['time_stamp']
+        time_stamp = float(float(result[0]['time_stamp'])/1000)
         return datetime.utcfromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
 
     def get_max_time(self, thread_id):
         result = self.db.emails.find({'thread_id' : thread_id}).sort([('time_stamp', -1)]).limit(1)
-        time_stamp = result[0]['time_stamp']
+        time_stamp = float(float(result[0]['time_stamp'])/1000)
         return datetime.utcfromtimestamp(time_stamp).strftime('%Y-%m-%d %H:%M:%S')
 
     def get_thread_numbers(self, course, year):
@@ -27,7 +27,7 @@ class DB_Manager:
         list = []
         for r in result:
             list.append(r['thread_id'])
-        return set(list)
+        return sorted(set(list))
 
     def get_one_query_data(self, q):
         return self.db.emails.find_one(q)
